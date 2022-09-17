@@ -68,6 +68,24 @@ impl Mesh {
         Mesh::new_with_gpu_vectors(cs, fs, ns, us)
     }
 
+    /// Tries to clone this Mesh
+    pub fn try_clone(&self, dynamic_draw: bool) -> Option<Mesh>{
+        if !self.coords.read().unwrap().is_on_ram()
+            || !self.faces.read().unwrap().is_on_ram()
+            || !self.normals.read().unwrap().is_on_ram()
+            || !self.uvs.read().unwrap().is_on_ram()
+        {
+            return None;
+        }
+
+        let coords = self.coords.read().unwrap().to_owned()?;
+        let faces = self.faces.read().unwrap().to_owned()?;
+        let normals = self.normals.read().unwrap().to_owned()?;
+        let uvs = self.uvs.read().unwrap().to_owned()?;
+
+        Some(Mesh::new(coords, faces, Some(normals), Some(uvs), dynamic_draw))
+    }
+
     /// Creates a new mesh from a mesh descr.
     ///
     /// In the normals and uvs are not given, they are automatically computed.

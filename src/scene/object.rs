@@ -26,6 +26,23 @@ pub struct ObjectData {
 }
 
 impl ObjectData {
+
+    /// Creates a deep copy of this object without copying user data
+    pub fn try_clone(&self) -> Option<ObjectData> {
+        let user_data = ();
+        Some(ObjectData {
+            material: self.material.clone(),
+            texture: self.texture.clone(),
+            color: self.color,
+            lines_color: self.lines_color,
+            wlines: self.wlines,
+            wpoints: self.wpoints,
+            draw_surface: self.draw_surface,
+            cull: self.cull,
+            user_data: Box::new(user_data),
+        })
+    }
+
     /// The texture of this object.
     #[inline]
     pub fn texture(&self) -> &Rc<Texture> {
@@ -111,6 +128,14 @@ impl Object {
         };
 
         Object { data, mesh }
+    }
+
+    /// Creates a deep copy of this object without copying user data
+    pub fn try_clone(&self) -> Option<Object> {
+        let data = self.data.try_clone()?;
+        let mesh = self.mesh.borrow().try_clone(false)?;
+        let mesh = Rc::new(RefCell::new(mesh));
+        Some(Object { data, mesh })
     }
 
     #[doc(hidden)]
